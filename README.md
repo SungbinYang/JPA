@@ -6,3 +6,4 @@
 ## JPA 시작하기
 
 - Hello JPA - 프로젝트 생성
+- Hello JPA - 애플리케이션 개발

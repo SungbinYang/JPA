@@ -561,3 +561,72 @@ xsi:schemaLocation="http://xmlns.jcp.org/xml/ns/persistence http://xmlns.jcp.org
   * Oracle 10g : org.hibernate.dialect.Oracle10gDialect
   * MySQL : org.hibernate.dialect.MySQL5InnoDBDialect
 - 하이버네이트는 40가지 이상의 데이터베이스 방언 지원
+
+## JPA 구동 방식
+
+![](https://images.velog.io/images/roberts/post/d05a451f-834f-470e-a64c-5661304899d3/%E1%84%89%E1%85%B3%E1%84%8F%E1%85%B3%E1%84%85%E1%85%B5%E1%86%AB%E1%84%89%E1%85%A3%E1%86%BA%202022-03-28%20%E1%84%8B%E1%85%A9%E1%84%92%E1%85%AE%2011.19.46.png)
+
+## 객체와 테이블을 생성하고 매핑하기
+- @Entity: JPA가 관리할 객체
+- @Id: 데이터베이스 PK와 매핑
+
+``` java
+@Entity
+public class Member {
+
+    @Id
+    private Long id;
+
+    private String name;
+
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+}
+```
+
+``` sql
+reate table Member (
+	 id bigint not null,
+ 	name varchar(255),
+ 	primary key (id)
+);
+```
+
+## ⚠️ 주의
+- 엔티티 매니저 팩토리는 하나만 생성해서 애플리케이션 전체에 서 공유
+- 엔티티 매니저는 쓰레드간에 공유X (사용하고 버려야 한다).
+- **JPA의 모든 데이터 변경은 트랜잭션 안에서 실행**
+
+## JPQL
+- JPA를 사용하면 엔티티 객체를 중심으로 개발
+- 문제는 검색 쿼리
+- 검색을 할 때도 테이블이 아닌 엔티티 객체를 대상으로 검색
+- 모든 DB 데이터를 객체로 변환해서 검색하는 것은 불가능
+- 애플리케이션이 필요한 데이터만 DB에서 불러오려면 결국 검 색 조건이 포함된 SQL이 필요
+- JPA는 SQL을 추상화한 JPQL이라는 객체지향 쿼리 언어 제공
+- SQL과 문법 유사, SELECT, FROM, WHERE, GROUP BY, HAVING, JOIN 지원
+- JPQL은 엔티티 객체를 대상으로 쿼리
+- SQL은 데이터베이스 테이블을 대상으로 쿼리
+- 테이블이 아닌 객체를 대상으로 검색하는 객체 지향 쿼리
+- SQL을 추상화해서 특정 데이터베이스 SQL에 의존X
+- JPQL을 한마디로 정의하면 객체 지향 SQL
+
+## 후기
+> 이제까지 JPA라는 신셰계에 JPQL이라는 기능까지 알아보았다. 처음에는 xml이라는것으로 설정하는것이
+번거로워서 실무에선 이 xml 설정파일이 얼마나 복잡할까 생각을 했다. 또한 entitymanager로 만든 객체를
+기능 당 try ~ catch로 사용할려면 얼마나 코드가 길어질까 생각을 해서 구글링을 통해 어떻게 개발을 하는지
+찾아보니 spring data jpa라는것이 알아서 다 해주는것 같았다. 이 부분은 나중에 학습을하고 지금은 jpa가 어떻게
+동작하는지를 중점으로 좀 더 공부를 해야겠다.
