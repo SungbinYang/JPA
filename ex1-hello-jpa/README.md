@@ -713,3 +713,102 @@ em.persist(member);
 > 처음에 단순히 persist만 하면 무조건 저장되는줄 알았던 개념을 다시 잡게되어 좋은 시간이었다.
 또한 상태관리는 들어봤지만 어느게 어느 상태인지 살짝 분간이 안 간 상태여서 그 개념들을 조금 다시
 잡는 시간이 되었다.
+
+## 엔티티 조회, 1차 캐시
+
+![](https://images.velog.io/images/roberts/post/87d38632-46c2-414a-9e3c-e39b69162a59/%E1%84%89%E1%85%B3%E1%84%8F%E1%85%B3%E1%84%85%E1%85%B5%E1%86%AB%E1%84%89%E1%85%A3%E1%86%BA%202022-03-29%20%E1%84%8B%E1%85%A9%E1%84%92%E1%85%AE%2010.26.44.png)
+
+``` java
+//엔티티를 생성한 상태(비영속)
+Member member = new Member();
+member.setId("member1");
+member.setUsername("회원1");
+//엔티티를 영속
+em.persist(member); 
+```
+
+- 1차 캐시에서 조회
+
+``` java
+ Member member = new Member();
+ member.setId("member1");
+ member.setUsername("회원1");
+ //1차 캐시에 저장됨
+ em.persist(member);
+ //1차 캐시에서 조회
+ Member findMember = em.find(Member.class, "member1");
+```
+
+![](https://images.velog.io/images/roberts/post/df2c6907-f1a8-42e9-b6ba-b5d79cdb3ded/%E1%84%89%E1%85%B3%E1%84%8F%E1%85%B3%E1%84%85%E1%85%B5%E1%86%AB%E1%84%89%E1%85%A3%E1%86%BA%202022-03-29%20%E1%84%8B%E1%85%A9%E1%84%92%E1%85%AE%2010.28.28.png)
+
+- 데이터베이스에서 조회
+
+``` java
+Member findMember2 = em.find(Member.class, "member2");
+```
+
+![](https://images.velog.io/images/roberts/post/5de476a5-4845-4932-ae15-d0b191889b4b/%E1%84%89%E1%85%B3%E1%84%8F%E1%85%B3%E1%84%85%E1%85%B5%E1%86%AB%E1%84%89%E1%85%A3%E1%86%BA%202022-03-29%20%E1%84%8B%E1%85%A9%E1%84%92%E1%85%AE%2010.29.37.png)
+
+## 영속 엔티티의 동일성 보장
+
+``` java
+Member a = em.find(Member.class, "member1");
+Member b = em.find(Member.class, "member1");
+System.out.println(a == b); //동일성 비교 true
+```
+
+- 1차 캐시로 반복 가능한 읽기(REPEATABLE READ) 등급의 트랜잭 션 격리 수준을 데이터베이스가 아닌 애플리케이션 차원에서 제공
+
+## 엔티티 등록 트랜잭션을 지원하는 쓰기 지연
+
+``` java
+EntityManager em = emf.createEntityManager();
+EntityTransaction transaction = em.getTransaction();
+//엔티티 매니저는 데이터 변경시 트랜잭션을 시작해야 한다.
+transaction.begin(); // [트랜잭션] 시작
+em.persist(memberA);
+em.persist(memberB);
+//여기까지 INSERT SQL을 데이터베이스에 보내지 않는다.
+//커밋하는 순간 데이터베이스에 INSERT SQL을 보낸다.
+transaction.commit(); // [트랜잭션] 커밋
+```
+
+![](https://images.velog.io/images/roberts/post/a823aab1-51d9-48ba-b3cb-a117f9399a71/%E1%84%89%E1%85%B3%E1%84%8F%E1%85%B3%E1%84%85%E1%85%B5%E1%86%AB%E1%84%89%E1%85%A3%E1%86%BA%202022-03-29%20%E1%84%8B%E1%85%A9%E1%84%92%E1%85%AE%2010.31.25.png)
+
+![](https://images.velog.io/images/roberts/post/970fb0d7-7dfa-445f-ab79-c754202fde36/%E1%84%89%E1%85%B3%E1%84%8F%E1%85%B3%E1%84%85%E1%85%B5%E1%86%AB%E1%84%89%E1%85%A3%E1%86%BA%202022-03-29%20%E1%84%8B%E1%85%A9%E1%84%92%E1%85%AE%2010.31.59.png)
+
+## 엔티티 수정 (Dirty Checking)
+
+``` java
+EntityManager em = emf.createEntityManager();
+EntityTransaction transaction = em.getTransaction();
+transaction.begin(); // [트랜잭션] 시작
+// 영속 엔티티 조회
+Member memberA = em.find(Member.class, "memberA");
+// 영속 엔티티 데이터 수정
+memberA.setUsername("hi");
+memberA.setAge(10);
+//em.update(member) 이런 코드가 있어야 하지 않을까?
+transaction.commit(); // [트랜잭션] 커밋
+```
+
+- 왜 수정 쿼리시, persist를 호출하지 않을까?
+  * JPA의 dirty checking 때문이다.
+  * 비밀은 영속성 컨텍스트 안에 있다.
+  * 트랜젝션 커밋 시에, flush()가 호출되는데 그 후에, 엔티티와 스냅샷을 비교한다.
+  * 여기서, 스냅샷은 최초로 읽어온 시점, 그 시점을 스냅샷으로 떠온다.
+  * 일일이 비교 후, 바뀐 부분을 update query 생성 후, 쓰기 지연 SQL 저장소에 넣어둔다.
+  * DB 반영 후 Commit
+
+## 엔티티 삭제
+
+``` java
+//삭제 대상 엔티티 조회
+Member memberA = em.find(Member.class, “memberA");
+em.remove(memberA); //엔티티 삭제
+```
+
+## 후기
+> 영속성 컨텍스트의 하이라이트 엔티티 수정에서 발하는것 같다.
+수정 부분을 보면서 persist()를 따로 호출도 안했는데 쿼리가 날라가고 반영이 되었다는게
+많이 신기하였다.

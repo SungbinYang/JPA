@@ -4,7 +4,6 @@ import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
 import javax.persistence.EntityTransaction;
 import javax.persistence.Persistence;
-import java.util.List;
 
 /**
  * packageName : me.sungbin.hellpjpa
@@ -27,15 +26,10 @@ public class JpaMain {
         transaction.begin();
 
         try {
-            // 비영속
-            Member member = new Member();
-            member.setId(3L);
-            member.setName("jacob");
+            Member member = entityManager.find(Member.class, 5L);
+            member.setName("Kane");
 
-            // 영속 :: DB에 저장되지 않는다.
-            System.out.println("======BEFORE======");
-            entityManager.persist(member);
-            System.out.println("======AFTER======");
+            System.out.println("=================================");
 
             transaction.commit(); // 이때 DB에 쿼리를 날린다.
         } catch (Exception e) {
