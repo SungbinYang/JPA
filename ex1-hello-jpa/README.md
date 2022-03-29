@@ -630,3 +630,86 @@ reate table Member (
 기능 당 try ~ catch로 사용할려면 얼마나 코드가 길어질까 생각을 해서 구글링을 통해 어떻게 개발을 하는지
 찾아보니 spring data jpa라는것이 알아서 다 해주는것 같았다. 이 부분은 나중에 학습을하고 지금은 jpa가 어떻게
 동작하는지를 중점으로 좀 더 공부를 해야겠다.
+
+## JPA에서 가장 중요한 2가지
+- 객체와 관계형 데이터베이스 매핑하기 (Object Relational Mapping)
+- **영속성 컨텍스트**
+
+![](https://images.velog.io/images/roberts/post/edd137e8-a2dc-405f-a173-abc4e6616f8e/%E1%84%89%E1%85%B3%E1%84%8F%E1%85%B3%E1%84%85%E1%85%B5%E1%86%AB%E1%84%89%E1%85%A3%E1%86%BA%202022-03-29%20%E1%84%8B%E1%85%A9%E1%84%92%E1%85%AE%209.22.08.png)
+
+## 영속성 컨텍스트
+- JPA를 이해하는데 가장 중요한 용어
+- “엔티티를 영구 저장하는 환경”이라는 뜻
+- EntityManager.persist(entity);
+  * 사실 DB에 저장하는것이 아니라 영속성 컨텍스트를 통해 엔티티를 영속화한다.
+  * DB에 저장하는것이 아니라 엔테테를 영속성 컨텍스트라는데 저장한다.
+- 영속성 컨텍스트는 논리적인 개념
+- 눈에 보이지 않는다.
+- 엔티티 매니저를 통해서 영속성 컨텍스트에 접근
+  * 엔티티 매니저 생성 시, 그 안에 영속성 컨텍스트 1:1 관계 생성
+
+## J2SE 환경
+- 엔티티 매니저와 영속성 컨텍스트가 1:1 관계
+
+![](https://images.velog.io/images/roberts/post/57b3f27f-b2b9-4d7f-8ca9-af8d1b1da4d2/%E1%84%89%E1%85%B3%E1%84%8F%E1%85%B3%E1%84%85%E1%85%B5%E1%86%AB%E1%84%89%E1%85%A3%E1%86%BA%202022-03-29%20%E1%84%8B%E1%85%A9%E1%84%92%E1%85%AE%209.25.53.png)
+
+## 엔티티의 생명주기
+- 비영속 (new/transient)
+  * 영속성 컨텍스트와 전혀 관계가 없는 새로운 상태
+- 영속 (managed)
+  * 영속성 컨텍스트에 관리되는 상태
+- 준영속 (detached)
+  * 영속성 컨텍스트에 저장되었다가 분리된 상태
+- 삭제 (removed)
+  * 삭제된 상태
+
+![](https://images.velog.io/images/roberts/post/71663f11-5c61-4330-a6ae-5064169f9760/%E1%84%89%E1%85%B3%E1%84%8F%E1%85%B3%E1%84%85%E1%85%B5%E1%86%AB%E1%84%89%E1%85%A3%E1%86%BA%202022-03-29%20%E1%84%8B%E1%85%A9%E1%84%92%E1%85%AE%209.28.34.png)
+
+## 비영속
+- 객체를 생성한 상태
+
+![](https://images.velog.io/images/roberts/post/a7a004f9-b047-4a7b-9736-b35fb27f97d1/%E1%84%89%E1%85%B3%E1%84%8F%E1%85%B3%E1%84%85%E1%85%B5%E1%86%AB%E1%84%89%E1%85%A3%E1%86%BA%202022-03-29%20%E1%84%8B%E1%85%A9%E1%84%92%E1%85%AE%209.29.37.png)
+
+``` java
+//객체를 생성한 상태(비영속)
+Member member = new Member();
+member.setId("member1");
+member.setUsername("회원1");
+```
+
+## 영속
+
+![](https://images.velog.io/images/roberts/post/8da19752-fdc1-47e5-a338-bbcd1d076137/%E1%84%89%E1%85%B3%E1%84%8F%E1%85%B3%E1%84%85%E1%85%B5%E1%86%AB%E1%84%89%E1%85%A3%E1%86%BA%202022-03-29%20%E1%84%8B%E1%85%A9%E1%84%92%E1%85%AE%209.30.29.png)
+
+``` java
+//객체를 생성한 상태(비영속)
+Member member = new Member();
+member.setId("member1");
+member.setUsername(“회원1”);
+EntityManager em = emf.createEntityManager();
+em.getTransaction().begin();
+ //객체를 저장한 상태(영속)
+em.persist(member);
+```
+
+## 준영속, 삭제
+
+``` java
+ //회원 엔티티를 영속성 컨텍스트에서 분리, 준영속 상태
+ em.detach(member);
+ 
+  //객체를 삭제한 상태(삭제)
+ em.remove(member);
+```
+
+## 영속성 컨텍스트 이점
+- 1차 캐시
+- 동일성(identity) 보장
+- 트랜잭션을 지원하는 쓰기 지연
+- 변경 감지(Dirty Checking)
+- 지연 로딩(Lazy Loading)
+
+## 후기
+> 처음에 단순히 persist만 하면 무조건 저장되는줄 알았던 개념을 다시 잡게되어 좋은 시간이었다.
+또한 상태관리는 들어봤지만 어느게 어느 상태인지 살짝 분간이 안 간 상태여서 그 개념들을 조금 다시
+잡는 시간이 되었다.

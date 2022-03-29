@@ -27,16 +27,17 @@ public class JpaMain {
         transaction.begin();
 
         try {
-            List<Member> resultList = entityManager.createQuery("select m from Member as m", Member.class)
-                    .setFirstResult(1)
-                    .setMaxResults(10)
-                    .getResultList();
+            // 비영속
+            Member member = new Member();
+            member.setId(3L);
+            member.setName("jacob");
 
-            for (Member member : resultList) {
-                System.out.println("member.name = " + member.getName());
-            }
+            // 영속 :: DB에 저장되지 않는다.
+            System.out.println("======BEFORE======");
+            entityManager.persist(member);
+            System.out.println("======AFTER======");
 
-            transaction.commit();
+            transaction.commit(); // 이때 DB에 쿼리를 날린다.
         } catch (Exception e) {
             transaction.rollback();
         } finally {
