@@ -26,8 +26,9 @@ public class JpaMain {
         transaction.begin();
 
         try {
-            Member member = entityManager.find(Member.class, 5L);
-            member.setName("Kane");
+            Member member = new Member(7L, "son");
+            entityManager.persist(member);
+            entityManager.flush();
 
             System.out.println("=================================");
 
