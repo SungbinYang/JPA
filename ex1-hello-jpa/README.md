@@ -865,3 +865,35 @@ em.setFlushMode(FlushModeType.COMMIT)
 - em.detach(entity) : 특정 엔티티만 준영속 상태로 전환
 - em.clear() : 영속성 컨텍스트를 완전히 초기화
 - em.close() : 영속성 컨텍스트를 종료
+
+## 엔티티 매핑 소개
+- 객체와 테이블 매핑 : @Entity, @Table
+- 필드와 컬럼 매핑 : @Column
+- 기본 키 매핑 : @Id
+- 연관관계 매핑 : @ManyToOne, @JoinColumn
+
+## @Entity
+- @Entity가 붙은 클래스는 JPA가 관리, 엔티티라 한다.
+- JPA를 사용해서 테이블과 매핑할 클래스는 @Entity 필수
+- 주의
+  * 기본 생성자 필수 (파라미터가 없는 public 또는 protected 생성자)
+    * JPA가 동적으로 리플렉션이나 다양한 기술들을써서 proxing하기 위해서 기본생성자 필수
+    * 일단은 그냥 스펙상이다라고 생각!
+  * final 클래스, enum, interface, inner 클래스 사용 x
+  * 저장할 필드에 final 사용 x
+
+## @Entity 속성 정리
+- 속성 : name
+  * JPA에서 사용할 엔티티 이름을 지정한다.
+  * 기본값: 클래스 이름을 그대로 사용 (ex: Member)
+  * 같은 클래스 이름이 없으면 가급적 기본값을 사용한다.
+
+## @Table
+- @Table은 엔티티와 매핑할 테이블 지정
+
+|속성|기능|기본값|
+|------|---|---|
+|name|매핑할 테이블 이름|엔티티 이름을 사용|
+|catalog|데이터베이스 catalog 매핑||
+|schema|데이터베이스 schema 매핑||
+|uniqueConstraints (DDL)|DDL 생성 시에 유니크 제약 조건 생성||

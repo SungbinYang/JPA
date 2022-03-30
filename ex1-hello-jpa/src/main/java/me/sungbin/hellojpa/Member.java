@@ -1,10 +1,11 @@
-package me.sungbin.hellpjpa;
+package me.sungbin.hellojpa;
 
 import javax.persistence.Entity;
 import javax.persistence.Id;
+import javax.persistence.Table;
 
 /**
- * packageName : me.sungbin.hellpjpa
+ * packageName : me.sungbin.hellojpa
  * fileName : Member
  * author : rovert
  * date : 2022/03/28
@@ -16,6 +17,7 @@ import javax.persistence.Id;
  */
 
 @Entity
+@Table(name = "MBR")
 public class Member {
 
     @Id

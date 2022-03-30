@@ -1,4 +1,4 @@
-package me.sungbin.hellpjpa;
+package me.sungbin.hellojpa;
 
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
@@ -6,7 +6,7 @@ import javax.persistence.EntityTransaction;
 import javax.persistence.Persistence;
 
 /**
- * packageName : me.sungbin.hellpjpa
+ * packageName : me.sungbin.hellojpa
  * fileName : JpaMain
  * author : rovert
  * date : 2022/03/28
@@ -29,7 +29,7 @@ public class JpaMain {
             Member member = entityManager.find(Member.class, 5L);
             member.setName("Ronaldo");
 
-            entityManager.close();
+            entityManager.clear();
 
             Member member2 = entityManager.find(Member.class, 5L);
 
