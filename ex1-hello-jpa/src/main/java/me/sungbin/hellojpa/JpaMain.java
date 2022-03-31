@@ -26,15 +26,6 @@ public class JpaMain {
         transaction.begin();
 
         try {
-            Member member = entityManager.find(Member.class, 5L);
-            member.setName("Ronaldo");
-
-            entityManager.clear();
-
-            Member member2 = entityManager.find(Member.class, 5L);
-
-            System.out.println("=================================");
-
             transaction.commit(); // 이때 DB에 쿼리를 날린다.
         } catch (Exception e) {
             transaction.rollback();
