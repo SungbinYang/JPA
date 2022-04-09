@@ -1080,3 +1080,144 @@ public class Member {
 @Transient
 private Integer temp;
 ```
+
+## 기본 키 매핑 어노테이션
+- @Id
+- @GeneratedValue
+
+``` java
+@Id @GeneratedValue(strategy = GenerationType.AUTO)
+private Long id;
+```
+
+## 기본 키 매핑 방법
+- 직접 할당: @Id만 사용
+- 자동 생성(@GeneratedValue)
+  - IDENTITY: 데이터베이스에 위임, MYSQL
+  - SEQUENCE: 데이터베이스 시퀀스 오브젝트 사용, ORACLE
+    - @SequenceGenerator 필요
+  - TABLE: 키 생성용 테이블 사용, 모든 DB에서 사용
+    - @TableGenerator 필요
+  - AUTO: 방언에 따라 자동 지정, 기본값
+
+## 직접 할당
+- @Id 사용
+
+> 보통은 @Id와 @GenerateValue를 같이 사용한다.
+
+## IDENTITY 전략
+
+### 특징
+- 이 전략은 PK가 INSERT Query를 날린 후, PK 값이 결정된다. 하지만 영속성 컨텍스트에는 PK값이
+  무조건 있어야한다, 그래서 JPA는 1차 캐시 맵에 넣을 key 값이 없으니 넣을 방법이 없다.
+  결국, JPA는 이 경우만, persist() 시, INSERT Query를 날려준다.
+- 버퍼링 기능 불가
+- persist() 하는 시점에 id를 조회 할 수 있다. (select 쿼리는 안 날라간다.)
+- 기본 키 생성을 데이터베이스에 위임
+- 주로 MySQL, PostgreSQL, SQL Server, DB2에서 사용
+  (예: MySQL의 AUTO_ INCREMENT)
+- JPA는 보통 트랜잭션 커밋 시점에 INSERT SQL 실행
+- AUTO_ INCREMENT는 데이터베이스에 INSERT SQL을 실행한 이후에 ID 값을 알 수 있음
+- IDENTITY 전략은 em.persist() 시점에 즉시 INSERT SQL 실행 하고 DB에서 식별자를 조회
+
+### 매핑
+
+``` java
+@Entity
+public class Member {
+   @Id
+   @GeneratedValue(strategy = GenerationType.IDENTITY)
+   private Long id;
+}
+```
+
+## SEQUENCE 전략
+
+### 특징
+- 데이터베이스 시퀀스는 유일한 값을 순서대로 생성하는 특별한 데이터베이스 오브젝트(예: 오라클 시퀀스)
+- 오라클, PostgreSQL, DB2, H2 데이터베이스에서 사용
+- 네트워크를 왔다 갔다해서(next call ~) 성능상 떨어지는건 아닌가?
+  * JPA의 initValue, allocationSize 옵션으로 성능최적화가 가능하다.
+
+> pk는 타입은 왠만해서 Long 타입으로 지정하자!
+
+### 매핑
+
+``` java
+@Entity
+@SequenceGenerator(
+name = "MEMBER_SEQ_GENERATOR",
+sequenceName = "MEMBER_SEQ", //매핑할 데이터베이스 시퀀스 이름
+initialValue = 1, allocationSize = 1)
+public class Member {
+  @Id
+  @GeneratedValue(strategy = GenerationType.SEQUENCE,
+  private Long id;
+}
+```
+
+### @SequenceGenerator
+- 주의: allocationSize 기본값 = 50
+
+|속성|기능|기본 값|
+|------|---|---|
+|name|식별자 생성기 이름|필수|
+|sequenceName|데이터베이스에 등록되어 있는 시퀀스 이름|hibernate_sequence|
+|initialValue|DDL 생성 시에만 사용됨, 시퀀스 DDL을 생성할 때 처음 1 시작하는 수를 지정한다.|1|
+|allocationSize|시퀀스 한 번 호출에 증가하는 수(성능 최적화에 사용됨) <br /> 데이터베이스 시퀀스 값이 하나씩 증가하도록 설정되어 있으면 이 값 을 반드시 1로 설정해야 한다|50 (50 ~ 100이 적정 수준)|
+|catalog, schema|데이터베이스 catalog, schema 이름||
+
+- call next value 2번 호출된다!
+  * 그 이유는 처음 DB_SEQ = 1 (Dummy 호출)을 하는데 이상하다 감지하여
+    그 다음 한번 더 호출 (DB_SEQ = 51)이 된다.
+  * 그리고 50번이 될때 까지 메모리에서 가져오고 그것을 넘어가면 50 증가시킨다.
+  * 쿼리 호출을 최소화 할수 있다.
+
+## TABLE 전략
+- 키 생성 전용 테이블을 하나 만들어서 데이터베이스 시퀀스를 흉 내내는 전략
+- 장점: 모든 데이터베이스에 적용 가능
+- 단점: 성능
+
+### 매핑
+
+``` sql
+create table MY_SEQUENCES (
+  sequence_name varchar(255) not null,
+  next_val bigint,
+  primary key ( sequence_name )
+)
+```
+
+``` java
+@Entity
+@TableGenerator(
+name = "MEMBER_SEQ_GENERATOR",
+table = "MY_SEQUENCES",
+pkColumnValue = “MEMBER_SEQ", allocationSize = 1)
+public class Member {
+@Id
+@GeneratedValue(strategy = GenerationType.TABLE,
+generator = "MEMBER_SEQ_GENERATOR")
+  private Long id;
+}
+```
+
+### @TableGenerator - 속성
+
+|속성|기능|기본 값|
+|------|---|---|
+|name|식별자 생성기 이름|필수|
+|table|키생성 테이블명|hibernate_sequences|
+|pkColumnName|시퀀스 컬럼명|sequence_name|
+|valueColumnName|시퀀스 값 컬럼명|next_val|
+|pkColumnValue|키로 사용할 값 이름|엔티티 이름|
+|initialValue|초기 값, 마지막으로 생성된 값이 기준이다.|0|
+|allocationSize|시퀀스 한 번 호출에 증가하는 수(성능 최적화에 사용됨)|50|
+|catalog, schema|데이터베이스 catalog, schema 이름||
+|uniqueConstraints(DDL)|유니크 제약 조건을 지정할 수 있다.||
+
+## 권장하는 식별자 전략
+- 기본 키 제약 조건 : null 아님, 유일, 변하면 안된다.
+- 미래까지 이 조건을 만족하는 자연키는 찾기 어렵다. 대체키를 사용하자.
+- 예를 들어, 주민등록번호는 기본 키로 적적하지 않다.
+- 권장: Long형 + 대체키 + 키 생성전략 사용

@@ -26,12 +26,26 @@ public class JpaMain {
         transaction.begin();
 
         try {
-            Member member = new Member();
-            member.setId(4L);
-            member.setUsername("jacob");
-            member.setRoleType(RoleType.GUEST);
+            Member member1 = new Member();
+            member1.setUsername("sungbin");
 
-            entityManager.persist(member);
+            Member member2 = new Member();
+            member2.setUsername("robert");
+
+            Member member3 = new Member();
+            member3.setUsername("jacob");
+
+            System.out.println("==================");
+
+            entityManager.persist(member1); // 1, 51
+            entityManager.persist(member2); // memory
+            entityManager.persist(member3); // memory
+
+            System.out.println("member1 = " + member1.getId());
+            System.out.println("member2 = " + member2.getId());
+            System.out.println("member3 = " + member3.getId());
+
+            System.out.println("==================");
 
             transaction.commit(); // 이때 DB에 쿼리를 날린다.
         } catch (Exception e) {
