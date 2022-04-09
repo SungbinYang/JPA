@@ -26,6 +26,13 @@ public class JpaMain {
         transaction.begin();
 
         try {
+            Member member = new Member();
+            member.setId(4L);
+            member.setUsername("jacob");
+            member.setRoleType(RoleType.GUEST);
+
+            entityManager.persist(member);
+
             transaction.commit(); // 이때 DB에 쿼리를 날린다.
         } catch (Exception e) {
             transaction.rollback();

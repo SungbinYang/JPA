@@ -933,3 +933,150 @@ em.setFlushMode(FlushModeType.COMMIT)
 > 오늘 들은 수업에서 가장 큰 교훈은 가급적이면 테스트나 운영서버에서 validate를 쓰지 말고
 아예 none 처리를 하자!
 update도 잘못쓰다가 테이블 락이 걸려 서비스를 중단해야하는 경우도 있다.
+
+## 요구사항 추가
+1. 회원은일반회원과관리자로구분해야한다.
+2. 회원가입일과수정일이있어야한다.
+3. 회원을설명할수있는필드가있어야한다.이필드는길이제 한이 없다.
+
+``` java
+@Entity
+public class Member {
+
+    @Id
+    private Long id;
+
+    @Column(name = "name")
+    private String username;
+
+    private Integer age;
+
+    @Enumerated(EnumType.STRING)
+    private RoleType roleType;
+
+    @Temporal(TemporalType.TIMESTAMP)
+    private Date createdDate;
+
+    @Temporal(TemporalType.TIMESTAMP)
+    private Date lastModifiedDate;
+
+    @Lob
+    private String description;
+
+    public Member() {
+    }
+
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
+
+    public String getUsername() {
+        return username;
+    }
+
+    public void setUsername(String username) {
+        this.username = username;
+    }
+
+    public Integer getAge() {
+        return age;
+    }
+
+    public void setAge(Integer age) {
+        this.age = age;
+    }
+
+    public RoleType getRoleType() {
+        return roleType;
+    }
+
+    public void setRoleType(RoleType roleType) {
+        this.roleType = roleType;
+    }
+
+    public Date getCreatedDate() {
+        return createdDate;
+    }
+
+    public void setCreatedDate(Date createdDate) {
+        this.createdDate = createdDate;
+    }
+
+    public Date getLastModifiedDate() {
+        return lastModifiedDate;
+    }
+
+    public void setLastModifiedDate(Date lastModifiedDate) {
+        this.lastModifiedDate = lastModifiedDate;
+    }
+
+    public String getDescription() {
+        return description;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
+    }
+}
+```
+
+## 매핑 어노테이션 정리
+- 테이블이나 엔티티 매핑은 별거 없어보이지만, 필드와 컬럼은 경우가 다양하다.
+- hibernate.hbm2ddl.auto
+
+|어노테이션|설명|
+|------|---|
+|@Column|컬럼 매핑|
+|@Temporal|날짜 타입 매핑 (DATE, TIME, TIMESTAMP 이 중에 1개를 value값으로 지정해야한다.)|
+|@Enumerated|enum 타입 매핑|
+|@Lob|문자 타입형으로 선언한 경우 DB에 CLOB, 그 외엔 BLOB|
+|@Transient|특정 필드를 컬럼에 매핑하지 않음(매핑 무시)|
+
+## @Column
+
+|속성|설명|기본 값|
+|------|---|---|
+|name|필드와 매핑할 테이블의 컬럼 이름|객체의 필드 이름|
+|insertable,<br />updatable|등록, 변경 가능 여부, FALSE로 둘 시, 절대 등록, 수정 안됨|TRUE|
+|nullable(DDL)|null 값의 허용 여부를 설정한다. false로 설정하면 DDL 생성 시에 not null 제약조건이 붙는다. 자주 사용되는 속성!||
+|unique(DDL)|자주 사용되지 않는다. 이유는 자동생성 쿼리에 unique 제약조건을 건 컬럼 이름이 난수값으로 바꿔주기 때문에 나중에 판별하기 힘들다. 그래서 @Table의 uniqueConstraints와 같지만 한 컬럼에 간단히 유니크 제 약조건을 걸 때 사용한다. ||
+|columnDefinition (DDL)|데이터베이스 컬럼 정보를 직접 줄 수 있다. <br /> ex) varchar(100) default 'EMPTY'|필드의 자바 타입과 방언 정보를 사용해|
+|length(DDL)|문자 길이 제약조건, String 타입에만 사용한다.|255|
+|precision, scale(DDL)|BigDecimal 타입에서 사용한다(BigInteger도 사용할 수 있다). precision은 소수점을 포함한 전체 자 릿수를, scale은 소수의 자릿수 다. 참고로 double, float 타입에는 적용되지 않는다. 아주 큰 숫자나 정 밀한 소수를 다루어야 할 때만 사용한다.|precision=19, scale=2|
+
+## @Enumerated
+- 자바 enum 타입을 매핑할 때 사용
+- **주의⚠️ ORDINAL 사용X**
+
+|속성|설명|기본 값|
+|------|---|---|
+|value|• EnumType.ORDINAL: enum 순서를 데이터베이스에 저장 <br />• EnumType.STRING: enum 이름을 데이터베이스에 저장|EnumType.ORDINAL|
+
+## @Temporal
+- 날짜 타입(java.util.Date, java.util.Calendar)을 매핑할 때 사용
+- 참고: LocalDate, LocalDateTime을 사용할 때는 생략 가능(최신 하이버네이트 지원)
+
+|속성|설명|기본 값|
+|------|---|---|
+|value|•TemporalType.DATE: 날짜, 데이터베이스 date 타입과 매핑<br />(예: 2013–10–11) <br />•TemporalType.TIME: 시간, 데이터베이스 time 타입과 매핑<br />(예: 11:11:11) <br /> •TemporalType.TIMESTAMP: 날짜와 시간, 데이터베이스 <br /> timestamp 타입과 매핑(예: 2013–10–11 11:11:11)||
+
+## @Lob
+- 데이터베이스 BLOB, CLOB 타입과 매핑
+- @Lob에는 지정할 수 있는 속성이 없다.
+- 매핑하는 필드 타입이 문자면 CLOB 매핑, 나머지는 BLOB 매핑
+  - CLOB: String, char[], java.sql.CLOB
+  - BLOB: byte[], java.sql. BLOB
+
+## @Transient
+- 필드 매핑X
+- 데이터베이스에 저장X, 조회X
+- 주로 메모리상에서만 임시로 어떤 값을 보관하고 싶을 때 사용
+
+``` java
+@Transient
+private Integer temp;
+```

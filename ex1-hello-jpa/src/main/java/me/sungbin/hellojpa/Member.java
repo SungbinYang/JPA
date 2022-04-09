@@ -1,6 +1,8 @@
 package me.sungbin.hellojpa;
 
 import javax.persistence.*;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.Date;
 
 /**
@@ -21,7 +23,7 @@ public class Member {
     @Id
     private Long id;
 
-    @Column(name = "name")
+    @Column(name = "name", nullable = false)
     private String username;
 
     private Integer age;
@@ -34,6 +36,10 @@ public class Member {
 
     @Temporal(TemporalType.TIMESTAMP)
     private Date lastModifiedDate;
+
+    private LocalDate testLocalDate;
+
+    private LocalDateTime testLocalDateTime;
 
     @Lob
     private String description;
@@ -98,5 +104,13 @@ public class Member {
 
     public void setDescription(String description) {
         this.description = description;
+    }
+
+    public int getTemp() {
+        return temp;
+    }
+
+    public void setTemp(int temp) {
+        this.temp = temp;
     }
 }

@@ -13,5 +13,5 @@ package me.sungbin.hellojpa;
  */
 
 public enum RoleType {
-    USER, ADMIN
+    GUEST, USER, ADMIN
 }
