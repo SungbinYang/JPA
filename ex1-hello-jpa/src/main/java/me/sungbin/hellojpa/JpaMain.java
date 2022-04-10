@@ -26,26 +26,24 @@ public class JpaMain {
         transaction.begin();
 
         try {
-            Member member1 = new Member();
-            member1.setUsername("sungbin");
+            // 저장
+            Team team = new Team();
+            team.setName("TeamA");
+            entityManager.persist(team);
 
-            Member member2 = new Member();
-            member2.setUsername("robert");
+            Member member = new Member();
+            member.setName("member1");
+            member.setTeam(team);
+            entityManager.persist(member);
 
-            Member member3 = new Member();
-            member3.setUsername("jacob");
+//            entityManager.flush();
+//            entityManager.clear();
 
-            System.out.println("==================");
+            // 조회
+            Member findMember = entityManager.find(Member.class, member.getId());
+            Team findTeam = findMember.getTeam();
 
-            entityManager.persist(member1); // 1, 51
-            entityManager.persist(member2); // memory
-            entityManager.persist(member3); // memory
-
-            System.out.println("member1 = " + member1.getId());
-            System.out.println("member2 = " + member2.getId());
-            System.out.println("member3 = " + member3.getId());
-
-            System.out.println("==================");
+            System.out.println("findTeam.getName() = " + findTeam.getName());
 
             transaction.commit(); // 이때 DB에 쿼리를 날린다.
         } catch (Exception e) {
