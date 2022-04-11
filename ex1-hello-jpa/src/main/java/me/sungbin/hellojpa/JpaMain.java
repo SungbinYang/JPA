@@ -30,6 +30,7 @@ public class JpaMain {
             // 저장
             Team team = new Team();
             team.setName("TeamA");
+//            team.getMembers().add(member); // 잘못된 연관관계 매핑 :: 주인쪽에 맺어줘야한다.
             entityManager.persist(team);
 
             Member member = new Member();
@@ -40,21 +41,16 @@ public class JpaMain {
             entityManager.flush();
             entityManager.clear();
 
-            // 조회
-            System.out.println("=====find member========");
-            Member findMember = entityManager.find(Member.class, member.getId());
-            System.out.println(findMember.getName());
-            System.out.println("=====find team==========");
-            Team findTeam = findMember.getTeam();
-            System.out.println("findTeam.getName() = " + findTeam.getName());
-            System.out.println("=====find team name========");
-            List<Member> members = findMember.getTeam().getMembers();
-            System.out.println(members.size()); // flush를 안해주면 연관관계를 찾을 수 없다.
+            team.addMember(member);
 
-            System.out.println("=====print========");
+            Team findTeam = entityManager.find(Team.class, team.getId()); // 1차 캐시
+            List<Member> members = findTeam.getMembers();
+
+            System.out.println("====================");
             for (Member m : members) {
                 System.out.println("m.getName() = " + m.getName());
             }
+            System.out.println("====================");
 
             transaction.commit(); // 이때 DB에 쿼리를 날린다.
         } catch (Exception e) {

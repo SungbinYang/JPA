@@ -1514,3 +1514,63 @@ SELECT *
 
 > 그렇게 하지 않고 반대로 하면 team.member를 바꾸면 member쪽에서 update 쿼리가 나가는데
 엄청 헷갈리기 시작하고 성능적인 이슈가 있다.
+
+## 양방향 매핑시 가장 많이 하는 실수
+- 연관관계의 주인에 값을 입력하지 않음
+
+``` java
+Team team = new Team();
+team.setName("TeamA");
+em.persist(team);
+
+Member member = new Member();
+member.setName("member1");
+
+//역방향(주인이 아닌 방향)만 연관관계 설정
+team.getMembers().add(member);
+em.persist(member);
+```
+
+|ID|USERNAME|TEAM_ID|
+|------|---|---|
+|1|member1|null|
+
+- 양방향 매핑시 연관관계의 주인에 값을 입력해야 한다.
+
+``` java
+Team team = new Team();
+team.setName("TeamA");
+em.persist(team);
+
+Member member = new Member();
+member.setName("member1");
+
+team.getMembers().add(member); //연관관계의 주인에 값 설정
+member.setTeam(team); //**
+em.persist(member);
+```
+|ID|USERNAME|TEAM_ID|
+|------|---|---|
+|1|member1|2|
+
+## 양방향 연관관계 주의
+- 순수 객체 상태를 고려해서 항상 양쪽에 값을 설정하자
+- 연관관계 편의 메소드를 생성하자
+- 양방향 매핑시에 무한 루프를 조심하자
+  * 예: toString(), lombok, JSON 생성 라이브러리
+
+> 롬복에서 왠만해서 toStrong 만들지 말라
+
+> JSON 생성 라이브러리는 Controller에서 만드는데 그때 반환값을 엔티티로 하지 말고 DTO로 하자
+이유는 첫째, StackOverflow 둘째, 엔티티는 충분히 변경이 가능한데 엔티티를 반환하면 api spec이
+변경된다.
+
+## 정리
+- 단방향 매핑만으로도 이미 연관관계 매핑은 완료
+- 양방향 매핑은 반대 방향으로 조회(객체 그래프 탐색) 기능이 추가된 것 뿐
+- JPQL에서 역방향으로 탐색할 일이 많음
+- 단방향 매핑을 잘 하고 양방향은 필요할 때 추가해도 됨 (테이블에 영향을 주지 않음)
+- 비즈니스 로직을 기준으로 연관관계의 주인을 선택하면 안됨
+- 연관관계의 주인은 외래 키의 위치를 기준으로 정해야함
+
+> 꿀팁은 처음 설계시에 전부 단방향 매핑으로 끝내라! 그리고 application 개발시에 필요 시, 추가하자!
