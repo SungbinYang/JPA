@@ -1363,3 +1363,154 @@ member.setTeam(teamB);
 > 처음에는 조인 쿼리도 헷갈리고 이제까지 배웠던 내용들이 혼재되서 복습의 중요성을 깨달았다.
 물론 매시간 수업 후 복습은 하지만, 완벽히 내것으로 되기가 힘든것 같다. 전에 배웠던 것들과
 조인 쿼리를 좀 더 공부를 다져야겠다.
+
+## 양방향 매핑
+
+![](https://velog.velcdn.com/images/roberts/post/d12be085-ad31-458d-bdb1-2a46202ece57/image.png)
+
+- member entity는 단방향과 동일, team entity는 컬렉션 추가
+
+``` java
+@Entity
+public class Member {
+
+    @Id @GeneratedValue
+    @Column(name = "MEMBER_ID")
+    private Long id;
+
+    @Column(name = "USERNAME")
+    private String name;
+
+//    @Column(name = "TEAM_ID")
+//    private Long teamId;
+
+    @ManyToOne
+    @JoinColumn(name = "TEAM_ID")
+    private Team team;
+
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public Team getTeam() {
+        return team;
+    }
+
+    public void setTeam(Team team) {
+        this.team = team;
+    }
+}
+```
+
+``` java
+@Entity
+public class Team {
+
+    @Id @GeneratedValue
+    @Column(name = "TEAM_ID")
+    private Long id;
+
+    private String name;
+
+    @OneToMany(mappedBy = "team")
+    private List<Member> members = new ArrayList<>();
+
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public List<Member> getMembers() {
+        return members;
+    }
+
+    public void setMembers(List<Member> members) {
+        this.members = members;
+    }
+ }
+```
+
+> 사실 객체에서 양방향 연관관계는 없다. 단방향 관계 2개가 존재
+
+> 테이블은 단방향이든 양방향이든 동일하다. 그 이유는 member는 FK로 PK를 조인하면 되고
+팀은 PK와 FK를 조인하면 되기 때문이다.
+
+## 연관관계의 주인과 mappedBy
+- mappedBy = JPA의 멘탈붕괴 난이도
+- mappedBy는 처음 이해하기 어렵다.
+- 객체와 테이블간에 연관관계를 맺는 차이를 이해해야 한다.
+- 여기서 mappedBy는 1:N 매핑에서 나랑 어떤 변수랑 관계를 맺었는지 그 변수명을 값으로 적어준다.
+
+## 객체와 테이블이 관계를 맺는 차이
+- 객체 연관관계 = 2개
+  * 회원 -> 팀 연관관계 1개(단방향)
+  * 팀 -> 회원 연관관계 1개(단방향)
+- 테이블 연관관계 = 1개
+  * 회원 <-> 팀의 연관관계 1개(양방향)
+
+## 객체의 양방향 관계
+- 객체의 양방향 관계는 사실 양방향 관계가 아니라 서로 다른 단 뱡향 관계 2개다.
+- 객체를 양방향으로 참조하려면 단방향 연관관계를 2개 만들어야 한다.
+- A -> B (a.getB())
+- B -> A (b.getA())
+
+## 테이블의 양방향 연관관계
+- 테이블은 외래 키 하나로 두 테이블의 연관관계를 관리
+- MEMBER.TEAM_ID 외래 키 하나로 양방향 연관관계 가짐 (양쪽으로 조인할 수 있다.)
+
+``` sql
+SELECT *
+ FROM MEMBER M
+ JOIN TEAM T ON M.TEAM_ID = T.TEAM_ID
+```
+
+``` sql
+ SELECT *
+ FROM TEAM T
+ JOIN MEMBER M ON T.TEAM_ID = M.TEAM_ID
+```
+
+## 둘 중 하나로 외래 키를 관리해야 한다.
+
+![](https://velog.velcdn.com/images/roberts/post/a248bfa7-489a-4102-a9c5-5b571dbcf99c/image.png)
+
+## 연관관계 주인
+- TEAM_ID를 변경할 때 Member의 team을 수정해야 할까? 아니면 Team의 members를 수정해야할가?
+- 해결책은 연관관계 주인을 찾는 것이다.
+- 양방향 매핑 규칙
+  * 객체의 두 관계중 하나를 연관관계의 주인으로 지정
+  * 연관관계 주인만이 외래키를 관리 (등록, 수정)
+  * 주인이 아닌 쪽은 읽기만 가능
+  * 주인은 mappedBy 속성 사용하지 않는다.
+  * 주인이 아니면 mappedBy 속성으로 주인 지정
+
+## 누구를 주인으로?
+- 결론은 많은 쪽으로 주인을 정한다.
+- 외래키가 있는 곳이 주인이다.
+- 여기서 주인은 Member.team
+
+> 그렇게 하지 않고 반대로 하면 team.member를 바꾸면 member쪽에서 update 쿼리가 나가는데
+엄청 헷갈리기 시작하고 성능적인 이슈가 있다.

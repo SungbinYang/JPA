@@ -4,6 +4,7 @@ import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
 import javax.persistence.EntityTransaction;
 import javax.persistence.Persistence;
+import java.util.List;
 
 /**
  * packageName : me.sungbin.hellojpa
@@ -36,14 +37,24 @@ public class JpaMain {
             member.setTeam(team);
             entityManager.persist(member);
 
-//            entityManager.flush();
-//            entityManager.clear();
+            entityManager.flush();
+            entityManager.clear();
 
             // 조회
+            System.out.println("=====find member========");
             Member findMember = entityManager.find(Member.class, member.getId());
+            System.out.println(findMember.getName());
+            System.out.println("=====find team==========");
             Team findTeam = findMember.getTeam();
-
             System.out.println("findTeam.getName() = " + findTeam.getName());
+            System.out.println("=====find team name========");
+            List<Member> members = findMember.getTeam().getMembers();
+            System.out.println(members.size()); // flush를 안해주면 연관관계를 찾을 수 없다.
+
+            System.out.println("=====print========");
+            for (Member m : members) {
+                System.out.println("m.getName() = " + m.getName());
+            }
 
             transaction.commit(); // 이때 DB에 쿼리를 날린다.
         } catch (Exception e) {
