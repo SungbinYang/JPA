@@ -24,3 +24,15 @@
 
 > 위의 ERD와 UML은 너무 객체지향스럽지가 않고 객체그래프탐색이 전혀 안되어져 있다.
 그래서 결국 우리는 테이블간 연관관계 매핑에 대해 학습을 하고 이 문제점을 해결해야할것이다.
+
+## 테이블 구조
+- 테이블 구조는 이전과 같다.
+
+![](https://velog.velcdn.com/images/roberts/post/03559177-e1e9-4299-84df-ab58bbc2008f/image.png)
+
+## 객체 구조
+- 참조를 사용하도록 변경
+
+![](https://velog.velcdn.com/images/roberts/post/af118d12-b211-40d9-a328-d544a13c8fef/image.png)
+
+> 최대한 단방향으로 해결하자!

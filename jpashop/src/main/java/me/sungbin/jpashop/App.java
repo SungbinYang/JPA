@@ -1,5 +1,8 @@
 package me.sungbin.jpashop;
 
+import me.sungbin.jpashop.domain.Order;
+import me.sungbin.jpashop.domain.OrderItem;
+
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
 import javax.persistence.EntityTransaction;
@@ -26,6 +29,14 @@ public class App {
         transaction.begin();
 
         try {
+            Order order = new Order();
+            entityManager.persist(order);
+//            order.addOrderItem(new OrderItem());
+            OrderItem orderItem = new OrderItem();
+            orderItem.setOrder(order);
+
+            entityManager.persist(orderItem);
+
             transaction.commit();
         } catch (Exception e) {
             transaction.rollback();
