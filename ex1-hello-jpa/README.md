@@ -1698,3 +1698,30 @@ ex. 팀 - 회원 생각 안나면 회원 - 팀 관계를 생각해보자!
   * 전통적인 데이터베이스 개발자 선호
   * 장점: 주 테이블과 대상 테이블을 일대일에서 일대다 관계로 변경할 때 테이블 구조 유지
   * 단점: 프록시 기능의 한계로 지연 로딩으로 설정해도 항상 즉시 로딩됨(프록시는 뒤에서 설명)
+
+## 다대다
+- 관계형 데이터베이스는 정규화된 테이블 2개로 다대다 관계를 표현할 수 없음
+- 연결 테이블을 추가해서 일대다, 다대일 관계로 풀어내야함
+
+![](https://velog.velcdn.com/images/roberts/post/b3393ab3-4157-4422-942f-3a1c2c536381/image.png)
+
+- 객체는 컬렉션을 사용해서 객체 2개로 다대다 관계 가능
+
+![](https://velog.velcdn.com/images/roberts/post/5dff74ee-0ef6-4131-b6f0-1c3dc9e2ad3d/image.png)
+
+- @ManyToMany 사용
+- @JoinTable로 연결테이블 지정
+- 다대다 매핑: 단방향, 양방향 가능
+
+## 다대다 매핑의 한계
+- 편리해 보이지만 실무에서 사용X
+- 연결 테이블이 단순히 연결만 하고 끝나지 않음
+- 주문시간, 수량 같은 데이터가 들어올 수 있음
+
+![](https://velog.velcdn.com/images/roberts/post/ff2b9f61-8372-489b-8604-ebd04485a2d2/image.png)
+
+## 다대다 한계 극복
+- 연결 테이블용 엔티티 추가(연결 테이블을 엔티티로 승격)
+- @ManyToMany -> @OneToMany, @ManyToOne
+
+![](https://velog.velcdn.com/images/roberts/post/4d5617ea-dfa2-4a5c-922e-574d4f2138e9/image.png)

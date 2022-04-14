@@ -6,35 +6,25 @@ import java.util.List;
 
 /**
  * packageName : me.sungbin.hellojpa
- * fileName : Member
+ * fileName : Product
  * author : rovert
- * date : 2022/03/28
+ * date : 2022/04/14
  * description :
  * ===========================================================
  * DATE 			AUTHOR			 NOTE
  * -----------------------------------------------------------
- * 2022/03/28       rovert         최초 생성
+ * 2022/04/14       rovert         최초 생성
  */
 
 @Entity
-public class Member {
+public class Product {
 
     @Id @GeneratedValue
-    @Column(name = "MEMBER_ID")
     private Long id;
 
-    @Column(name = "USERNAME")
     private String name;
 
-    @ManyToOne
-    @JoinColumn(name = "TEAM_ID", insertable = false, updatable = false)
-    private Team team;
-
-    @OneToOne
-    @JoinColumn(name = "LOCKER_ID")
-    private Locker locker;
-
-    @OneToMany(mappedBy = "member")
+    @OneToMany(mappedBy = "product")
     private List<MemberProduct> memberProducts = new ArrayList<>();
 
     public Long getId() {
@@ -52,21 +42,4 @@ public class Member {
     public void setName(String name) {
         this.name = name;
     }
-
-    public Team getTeam() {
-        return team;
-    }
-
-    public void setTeam(Team team) {
-        this.team = team;
-    }
-
-    public Locker getLocker() {
-        return locker;
-    }
-
-    public void setLocker(Locker locker) {
-        this.locker = locker;
-    }
-
 }
