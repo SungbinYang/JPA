@@ -1,5 +1,6 @@
 package me.sungbin.jpashop;
 
+import me.sungbin.jpashop.domain.Book;
 import me.sungbin.jpashop.domain.Order;
 import me.sungbin.jpashop.domain.OrderItem;
 
@@ -29,13 +30,11 @@ public class App {
         transaction.begin();
 
         try {
-            Order order = new Order();
-            entityManager.persist(order);
-//            order.addOrderItem(new OrderItem());
-            OrderItem orderItem = new OrderItem();
-            orderItem.setOrder(order);
+            Book book = new Book();
+            book.setName("JPA");
+            book.setAuthor("sungbin");
 
-            entityManager.persist(orderItem);
+            entityManager.persist(book);
 
             transaction.commit();
         } catch (Exception e) {

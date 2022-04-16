@@ -86,3 +86,16 @@
 |fetch|글로벌 페치 전략을 설정한다.|@ManyToOne=FetchType.EAGER <br> @OneToMany=FetchType.LAZY|
 |cascade|영속성 전이 기능을 사용한다.||
 |targetEntity|연관된 엔티티의 타입 정보를 설정한다. 이 기능은 거 의 사용하지 않는다. 컬렉션을 사용해도 제네릭으로 타 입 정보를 알 수 있다.||
+
+
+## 요구사항 추가
+- 상품의 종류는 음반, 도서, 영화가 있고 이후 더 확장될수 있다.
+- 모든 데이터는 등록일과 수정일이 있어야 한다.
+
+## 도메인 모델
+
+![](https://velog.velcdn.com/images/roberts/post/7cd2d6b7-72da-44f7-923e-b3deab0d754c/image.png)
+
+![](https://velog.velcdn.com/images/roberts/post/871c6eb3-3d78-4287-8735-77d98c5875bf/image.png)
+
+![](https://velog.velcdn.com/images/roberts/post/c28fdab7-8a3b-45b3-b8f5-e0ab33f9a80e/image.png)
