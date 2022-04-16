@@ -4,6 +4,7 @@ import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
 import javax.persistence.EntityTransaction;
 import javax.persistence.Persistence;
+import java.time.LocalDateTime;
 
 /**
  * packageName : me.sungbin.hellojpa
@@ -26,19 +27,12 @@ public class JpaMain {
         transaction.begin();
 
         try {
-            Movie movie = new Movie();
-            movie.setDirector("A");
-            movie.setActor("BBB");
-            movie.setName("Harry Potter");
-            movie.setPrice(10000);
+            Member member = new Member();
+            member.setName("user1");
+            member.setCreatedBy("yang");
+            member.setCreatedDate(LocalDateTime.now());
 
-            entityManager.persist(movie);
-
-            entityManager.flush();
-            entityManager.clear();
-
-            Item item = entityManager.find(Item.class, movie.getId());
-            System.out.println("findMovie = " + item.getName());
+            entityManager.persist(member);
 
             transaction.commit(); // 이때 DB에 쿼리를 날린다.
         } catch (Exception e) {
