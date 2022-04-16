@@ -26,17 +26,19 @@ public class JpaMain {
         transaction.begin();
 
         try {
-            Member member = new Member();
-            member.setName("member1");
+            Movie movie = new Movie();
+            movie.setDirector("A");
+            movie.setActor("BBB");
+            movie.setName("Harry Potter");
+            movie.setPrice(10000);
 
-            entityManager.persist(member);
+            entityManager.persist(movie);
 
-            Team team = new Team();
-            team.setName("teamA");
-            //
-            team.getMembers().add(member);
+            entityManager.flush();
+            entityManager.clear();
 
-            entityManager.persist(team);
+            Item item = entityManager.find(Item.class, movie.getId());
+            System.out.println("findMovie = " + item.getName());
 
             transaction.commit(); // 이때 DB에 쿼리를 날린다.
         } catch (Exception e) {

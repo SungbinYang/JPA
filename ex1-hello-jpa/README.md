@@ -1725,3 +1725,69 @@ ex. 팀 - 회원 생각 안나면 회원 - 팀 관계를 생각해보자!
 - @ManyToMany -> @OneToMany, @ManyToOne
 
 ![](https://velog.velcdn.com/images/roberts/post/4d5617ea-dfa2-4a5c-922e-574d4f2138e9/image.png)
+
+
+## 상속관계 매핑
+- 관계형 DB는 상속관계를 만들수가 없다.
+- 슈퍼타입 서브타입 관계라는 모델링 기법이 객체 상속과 유사
+- 상속관계 매핑: 객체의 상속과 구조와 DB의 슈퍼타입 서브타입 관계를 매핑
+
+![](https://velog.velcdn.com/images/roberts/post/fc99d931-5692-4b1c-8abe-94caedee5b63/image.png)
+
+- 슈퍼타입 서브타입 논리 모델을 실제 물리 모델로 구현하는 방법
+  * 각각테이블로변환->조인전략
+  * 통합 테이블로 변환 -> 단일 테이블 전략
+  * 서브타입 테이블로 변환 -> 구현 클래스마다 테이블 전략
+- 상속관계 매핑은 논리모델을 물리모델로 바꾸는 방법이다.
+
+## 주요 어노테이션
+- @Inheritance(strategy=InheritanceType.XXX)
+  * JOINED: 조인 전략
+  * SINGLE_TABLE: 단일 테이블 전략
+  * TABLE_PER_CLASS: 구현 클래스마다 테이블 전략
+- @DiscriminatorColumn(name=“DTYPE”)
+- @DiscriminatorValue(“XXX”)
+- 어느 전략을 쓰든 객체의 입장에서는 똑같다.
+
+## 조인전략
+- 공통된 속성을 가진 슈퍼타입 테이블을 만들고 다른 속성들을 가진 서브 테이블을 만들어서 필요하면
+  조인으로 가져온다.
+
+![](https://velog.velcdn.com/images/roberts/post/acef233b-9467-469f-ac80-39deecf5f13b/image.png)
+
+- 정석 전략
+- 장점
+  * 테이블 정규화
+  * 외래 키 참조 무결성 제약조건 활용가능
+  * 저장공간 효율화
+- 단점
+  * 조회시조인을많이사용,성능저하
+  * 조회 쿼리가 복잡함
+  * 데이터 저장시 INSERT SQL 2번 호출
+
+## 단일 테이블 전략
+- 이 전략에서는 @DiscriminatorColumn을 꼭 추가해줘야한다.
+
+![](https://velog.velcdn.com/images/roberts/post/8af4b437-6ac3-4909-86d9-2e7fc835100b/image.png)
+
+- 장점
+  * 조인이 필요 없으므로 일반적으로 조회 성능이 빠름
+  * 조회 쿼리가 단순함
+- 단점
+  * 자식 엔티티가 매핑한 컬럼은 모두 null 허용
+  * 단일테이블에모든것을저장하므로테이블이커질수있다.상황에 따라서 조회 성능이 오히려 느려질 수 있다.
+- 슈퍼, 서브타입으로 나누지 않고 1개의 테이블에 다 떼려 박는다.
+- 조회할때 추상클래스 타입으로 조회를 하면 query가 union으로 모든 테이블을 다 조회한다.
+
+## 구현 클래스마다 테이블 전략
+- 절대 쓰면 안되는 전략
+
+![](https://velog.velcdn.com/images/roberts/post/9cd7f098-a048-44a0-9bef-cfd93f28dcd8/image.png)
+
+- 이 전략은 데이터베이스 설계자와 ORM 전문가 둘 다 추천X
+- 장점
+  * 서브 타입을 명확하게 구분해서 처리할 때 효과적
+  * not null 제약조건 사용 가능
+- 단점
+  * 여러 자식 테이블을 함께 조회할 때 성능이 느림(UNION SQL 필요)
+  * 자식 테이블을 통합해서 쿼리하기 어려움
