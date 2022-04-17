@@ -1,10 +1,11 @@
 package me.sungbin.hellojpa;
 
+import org.hibernate.Hibernate;
+
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
 import javax.persistence.EntityTransaction;
 import javax.persistence.Persistence;
-import java.time.LocalDateTime;
 
 /**
  * packageName : me.sungbin.hellojpa
@@ -27,16 +28,24 @@ public class JpaMain {
         transaction.begin();
 
         try {
-            Member member = new Member();
-            member.setName("user1");
-            member.setCreatedBy("yang");
-            member.setCreatedDate(LocalDateTime.now());
+            Member member1 = new Member();
+            member1.setName("member1");
+            entityManager.persist(member1);
 
-            entityManager.persist(member);
+            entityManager.flush();
+            entityManager.clear();
+
+            Member m1 = entityManager.getReference(Member.class, member1.getId());
+            System.out.println("m1.getClass() = " + m1.getClass()); // Proxy
+
+            Hibernate.initialize(m1); // 강제 초기화
+
+            System.out.println("isLoaded: " + entityManagerFactory.getPersistenceUnitUtil().isLoaded(m1));
 
             transaction.commit(); // 이때 DB에 쿼리를 날린다.
         } catch (Exception e) {
             transaction.rollback();
+            e.printStackTrace();
         } finally {
             entityManager.close();
         }

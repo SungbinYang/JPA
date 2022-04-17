@@ -1808,3 +1808,91 @@ ex. 팀 - 회원 생각 안나면 회원 - 팀 관계를 생각해보자!
 
 > 항상 공통된 기능을 BaseEntity로 묶어서 @MappedSuperclass로 두면 좋을것 같다.
 또한 abstract 클래스로 두어서 사용함으로 나중에 find같은것에 미연의 방지를 할 수 있다.
+
+## Member를 조회할 때 Team도 함께 조회해야 할까?
+
+![](https://velog.velcdn.com/images/roberts/post/0bc2bd4b-fb1b-4052-a4d1-533158c4b1e5/image.png)
+
+- 회원과 팀 함께 출력
+
+``` java
+public void printUserAndTeam(String memberId) {
+  Member member = em.find(Member.class, memberId);
+  Team team = member.getTeam();
+  System.out.println("회원 이름: " + member.getUsername());
+  System.out.println("소속팀: " + team.getName()); 
+}
+```
+
+- 회원만 출력
+
+``` java
+public void printUser(String memberId) {
+  Member member = em.find(Member.class, memberId);
+  Team team = member.getTeam();
+  System.out.println("회원 이름: " + member.getUsername());
+}
+```
+
+> 위의 상황을 JPA는 프록시와 지연로딩을 이용하여 해결할수 있다.
+지연로딩을 이해하려면 프록시를 먼저 이해해야한다.
+
+## 프록시 기초
+- em.find() vs em.getReference()
+- em.find(): 데이터베이스를 통해서 실제 엔티티 객체 조회
+- em.getReference(): 데이터베이스 조회를 미루는 가짜(프록시) 엔티티 객체 조회
+  * 메소드를 호출하는 시점에는 DB쿼리가 나가지는 않지만 실제 사용하는 시점에
+    쿼리가 호출된다.
+  * 단, ID 조회시, 쿼리가 안나갔던 이유는 getReference()를 호출할때, 파라미터로
+    ID값을 넘겨서 어떤 ID인지 알수 있기 때문이다.
+  * 프록시 객체는 초기에는 껍데기에 안에는 텅텅 비워있으며 실제 reference를 가르키는
+    target이 있다.
+  * 초기에는 target = null이고 id값만 있는 가짜 객체를 반환한다.
+
+![](https://velog.velcdn.com/images/roberts/post/31c209a2-e95d-44e3-82f1-86b1cf857d21/image.png)
+
+## 프록시 특징
+- 실제 클래스를 상속받아서 만들어짐 (하이버네이트가 처리)
+- 실제 클래스와 겉 모양이 같다.
+- 사용하는 입장에서는 진짜 객체인지 프록시 객체인지 구분하지 않고 사용하면 됨(이론상)
+
+![](https://velog.velcdn.com/images/roberts/post/51bb2ecf-c29d-42eb-bc05-920f9a5080c3/image.png)
+
+- 프록시 객체는 실제 객체의 참조를 보관
+- 프록시 객체를 호출하면 프록시 객체는 실제 객체의 메소드 호출
+
+## 프록시 객체의 초기화
+
+``` java
+Member member = em.getReference(Member.class, “id1”); 
+member.getName();
+```
+
+![](https://velog.velcdn.com/images/roberts/post/e69016e3-f9f1-4996-aa6b-e08287b00277/image.png)
+
+- 개발자가 getName()을 호출하면 MemberProxy가 target을 확인한다.
+- target이 null이므로 JPA가 영속성 컨텍스트에 target을 요청한다. (진짜 엔티티를 가져온다.)
+- 영속성 컨텍스트가 DB 조회 후, 실제 엔티티 생성한다.
+- target과 실제 엔티티와 연결
+- target.getName() 호출
+
+## 프록시의 특징
+- 프록시객체는 처음 사용할때 한번만 초기화
+- 프록시 객체를 초기화 할 때, 프록시 객체가 실제 엔티티로 바뀌는 것은 아님, 초 기화되면 프록시 객체를 통해서 실제 엔티티에 접근 가능
+- 프록시 객체는 원본 엔티티를 상속받음, 따라서 타입 체크시 주의해야함 (== 비 교 실패, 대신 instance of 사용)
+- 영속성 컨텍스트에 찾는 엔티티가 이미 있으면 em.getReference()를 호출해도 실제 엔티티 반환
+  * 이미 멤버가 영속성 컨텍스트 1차 캐시에 있어서 굳이 프록시 객체를 만들 이유가 없다.
+  * JPA에서는 같은 영속성 컨텍스트 안에서 같은 PK를 가져온 것의 == 비교는 항상 같다.
+- 영속성 컨텍스트의 도움을 받을 수 없는 준영속 상태일 때, 프록시를 초기화하면 문제 발생
+  (하이버네이트는 org.hibernate.LazyInitializationException 예외를 터트림)
+  (실무에서 진짜 많이 보는 예외!)
+
+## 프록시 확인
+- 프록시 인스턴스의 초기화 여부 확인
+  PersistenceUnitUtil.isLoaded(Object entity)
+- 프록시 클래스 확인 방법
+  entity.getClass().getName() 출력(..javasist.. or HibernateProxy...)
+- 프록시 강제 초기화
+  org.hibernate.Hibernate.initialize(entity);
+- 참고: JPA 표준은 강제 초기화 없음
+  강제 호출: member.getName()
