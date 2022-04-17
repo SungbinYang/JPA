@@ -1896,3 +1896,87 @@ member.getName();
   org.hibernate.Hibernate.initialize(entity);
 - 참고: JPA 표준은 강제 초기화 없음
   강제 호출: member.getName()
+
+## Member를 조회할 때 Team도 함께 조회해야 할까?
+- 단순히 member 정보만 사용하는 비즈니스 로직
+  println(member.getName());
+
+![](https://velog.velcdn.com/images/roberts/post/380c1106-48c2-455d-9ee5-070c688ad6f6/image.png)
+
+## 지연 로딩 LAZY을 사용해서 프록시로 조회
+
+``` java
+@Entity
+public class Member extends BaseEntity {
+
+    @Id @GeneratedValue
+    @Column(name = "MEMBER_ID")
+    private Long id;
+
+    @Column(name = "USERNAME")
+    private String name;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "TEAM_ID")
+    private Team team;
+ }
+```
+
+![](https://velog.velcdn.com/images/roberts/post/20776fef-c3df-44ba-b063-7fd01f0c7823/image.png)
+
+- Member member = em.find(Member.class, 1L);
+
+![](https://velog.velcdn.com/images/roberts/post/7afcf910-aa76-43cb-a160-c14f62c8fb2b/image.png)
+
+- Team team = member.getTeam();
+- team.getName(); // 실제 team을 사용하는 시점에 초기화(DB 조회)
+
+![](https://velog.velcdn.com/images/roberts/post/f9269fdb-dcb0-4bee-ae9e-ca438aa6ae95/image.png)
+
+## 즉시 로딩 EAGER를 사용해서 함께 조회
+
+``` java
+@Entity
+public class Member extends BaseEntity {
+
+    @Id @GeneratedValue
+    @Column(name = "MEMBER_ID")
+    private Long id;
+
+    @Column(name = "USERNAME")
+    private String name;
+
+    @ManyToOne
+    @JoinColumn(name = "TEAM_ID")
+    private Team team;
+}
+```
+
+![](https://velog.velcdn.com/images/roberts/post/3e483d67-b479-486c-b3de-ee8f982cf1ec/image.png)
+
+## 즉시 로딩(EAGER), Member조회시 항상 Team도 조회
+
+![](https://velog.velcdn.com/images/roberts/post/db64958b-b883-49b6-a12d-648dcef5ced2/image.png)
+
+- JPA 구현체는 가능하면 조인을 사용해서 SQL 한번에 함께 조회
+
+## 프록시와 즉시로딩 주의
+- 가급적 지연 로딩만 사용(특히 실무에서)
+- 즉시 로딩을 적용하면 예상하지 못한 SQL이 발생
+- 즉시 로딩은 JPQL에서 N+1 문제를 일으킨다.
+- @ManyToOne, @OneToOne은 기본이 즉시 로딩
+  -> LAZY로 설정
+- @OneToMany, @ManyToMany는 기본이 지연 로딩
+
+## 지연 로딩 활용
+- Member와 Team은 자주 함께 사용 -> 즉시 로딩
+- Member와 Order는 가끔 사용 -> 지연 로딩
+- Order와 Product는 자주 함께 사용 -> 즉시 로딩
+
+![](https://velog.velcdn.com/images/roberts/post/6e837608-bb4e-400e-9311-853623425b04/image.png)
+
+## 실무
+- 모든 연관관계에 지연 로딩을 사용해라!
+- 실무에서 즉시 로딩을 사용하지 마라!
+- JPQL fetch 조인이나, 엔티티 그래프 기능을 사용해라! (뒤에서 설명)
+- 즉시 로딩은 상상하지 못한 쿼리가 나간다.

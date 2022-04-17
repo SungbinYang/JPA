@@ -6,6 +6,7 @@ import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
 import javax.persistence.EntityTransaction;
 import javax.persistence.Persistence;
+import java.util.List;
 
 /**
  * packageName : me.sungbin.hellojpa
@@ -28,19 +29,33 @@ public class JpaMain {
         transaction.begin();
 
         try {
+            Team team = new Team();
+            team.setName("teamA");
+            entityManager.persist(team);
+
+            Team team2 = new Team();
+            team2.setName("teamB");
+            entityManager.persist(team2);
+
             Member member1 = new Member();
             member1.setName("member1");
+            member1.setTeam(team);
             entityManager.persist(member1);
+
+            Member member2 = new Member();
+            member2.setName("member2");
+            member2.setTeam(team2);
+            entityManager.persist(member2);
 
             entityManager.flush();
             entityManager.clear();
 
-            Member m1 = entityManager.getReference(Member.class, member1.getId());
-            System.out.println("m1.getClass() = " + m1.getClass()); // Proxy
+//            Member m1 = entityManager.find(Member.class, member1.getId());
 
-            Hibernate.initialize(m1); // 강제 초기화
-
-            System.out.println("isLoaded: " + entityManagerFactory.getPersistenceUnitUtil().isLoaded(m1));
+            // SQL: select * from Member;
+            // SQL: select * from Team where TEAM_ID = xxx;
+            List<Member> members = entityManager.createQuery("select m from Member m join fetch m.team", Member.class)
+                    .getResultList();
 
             transaction.commit(); // 이때 DB에 쿼리를 날린다.
         } catch (Exception e) {
