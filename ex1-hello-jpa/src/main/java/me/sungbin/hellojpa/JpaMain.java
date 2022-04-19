@@ -1,12 +1,9 @@
 package me.sungbin.hellojpa;
 
-import org.hibernate.Hibernate;
-
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
 import javax.persistence.EntityTransaction;
 import javax.persistence.Persistence;
-import java.util.List;
 
 /**
  * packageName : me.sungbin.hellojpa
@@ -29,33 +26,20 @@ public class JpaMain {
         transaction.begin();
 
         try {
-            Team team = new Team();
-            team.setName("teamA");
-            entityManager.persist(team);
+            Child child1 = new Child();
+            Child child2 = new Child();
 
-            Team team2 = new Team();
-            team2.setName("teamB");
-            entityManager.persist(team2);
+            Parent parent = new Parent();
+            parent.addChild(child1);
+            parent.addChild(child2);
 
-            Member member1 = new Member();
-            member1.setName("member1");
-            member1.setTeam(team);
-            entityManager.persist(member1);
-
-            Member member2 = new Member();
-            member2.setName("member2");
-            member2.setTeam(team2);
-            entityManager.persist(member2);
+            entityManager.persist(parent);
 
             entityManager.flush();
             entityManager.clear();
 
-//            Member m1 = entityManager.find(Member.class, member1.getId());
-
-            // SQL: select * from Member;
-            // SQL: select * from Team where TEAM_ID = xxx;
-            List<Member> members = entityManager.createQuery("select m from Member m join fetch m.team", Member.class)
-                    .getResultList();
+            Parent findParent = entityManager.find(Parent.class, parent.getId());
+            entityManager.remove(findParent);
 
             transaction.commit(); // 이때 DB에 쿼리를 날린다.
         } catch (Exception e) {

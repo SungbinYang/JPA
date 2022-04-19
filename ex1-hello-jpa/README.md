@@ -1980,3 +1980,60 @@ public class Member extends BaseEntity {
 - 실무에서 즉시 로딩을 사용하지 마라!
 - JPQL fetch 조인이나, 엔티티 그래프 기능을 사용해라! (뒤에서 설명)
 - 즉시 로딩은 상상하지 못한 쿼리가 나간다.
+
+## 영속성 전이: CASCADE
+- 특정 엔티티를 영속 상태로 만들 때 연관된 엔티티도 함께 영속 상태로 만들도 싶을 때
+- 예: 부모 엔티티를 저장할 때 자식 엔티티도 함께 저장.
+
+![](https://velog.velcdn.com/images/roberts/post/e73b6000-acf9-476a-a274-8305812d41f5/image.png)
+
+## 영속성 전이: 저장
+
+``` java
+@OneToMany(mappedBy = "parent", cascade = CascadeType.PERSIST)
+```
+
+![](https://velog.velcdn.com/images/roberts/post/d9a85688-122d-4e5f-a16e-c6dee68bce91/image.png)
+
+> 그럼 cascade는 언제 쓰는가? 무조건 1:N 관계일때 다 걸어야 하는가?
+하나의 1이 다수의 N을 관리할 때 의미가 있지만 그 외엔 별로 소용이 없다.
+하나의 게시판에 첨부파일정도는 사용이 가능하다.
+소유자가 1개일때만 가능하며 다른 엔티티와 연관이 있으면 쓰지 말자!
+
+> 쓸수 있는경우는 1과 N이 life cycle이 거의 같은 경우 + 단일 소유자 1개일때만 가능
+
+### 주의
+- 영속성 전이는 연관관계를 매핑하는 것과 아무 관련이 없음
+- 엔티티를 영속화할 때 연관된 엔티티도 함께 영속화하는 편리함 을 제공할 뿐
+
+## CASCADE의 종류
+- ALL: 모두 적용
+- PERSIST: 영속
+- REMOVE: 삭제
+- MERGE: 병합
+- REFRESH: REFRESH
+- DETACH: DETACH
+
+> 종류는 많지만 실무에서는 ALL과 PERSIST를 가장 많이 사용한다.
+
+## 고아 객체
+- 고아 객체 제거: 부모 엔티티와 연관관계가 끊어진 자식 엔티티 를 자동으로 삭제
+- orphanRemoval = true
+- Parent parent1 = em.find(Parent.class, id);
+  parent1.getChildren().remove(0);
+  //자식 엔티티를 컬렉션에서 제거
+- DELETE FROM CHILD WHERE ID=?
+
+### 주의
+- 참조가 제거된 엔티티는 다른 곳에서 참조하지 않는 고아 객체로 보고 삭제하는 기능
+- 참조하는 곳이 하나일 때 사용해야함!
+- 특정엔티티가개인소유할때사용
+- @OneToOne, @OneToMany만 가능
+
+> 참고: 개념적으로 부모를 제거하면 자식은 고아가 된다. 따라서 고 아 객체 제거 기능을 활성화 하면, 부모를 제거할 때 자식도 함께 제거된다. 이것은 CascadeType.REMOVE처럼 동작한다.
+
+## 영속성 전이 + 고아 객체, 생명주기
+- CascadeType.ALL + orphanRemovel=true
+- 스스로 생명주기를 관리하는 엔티티는 em.persist()로 영속화, em.remove()로 제거
+- 두 옵션을 모두 활성화 하면 부모 엔티티를 통해서 자식의 생명 주기를 관리할 수 있음
+- 도메인 주도 설계(DDD)의 Aggregate Root개념을 구현할 때 유용
