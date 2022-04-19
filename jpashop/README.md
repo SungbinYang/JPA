@@ -99,3 +99,15 @@
 ![](https://velog.velcdn.com/images/roberts/post/871c6eb3-3d78-4287-8735-77d98c5875bf/image.png)
 
 ![](https://velog.velcdn.com/images/roberts/post/c28fdab7-8a3b-45b3-b8f5-e0ab33f9a80e/image.png)
+
+## 글로벌 페치 전략 설정
+- 모든 연관관계를 지연 로딩으로
+- @ManyToOne, @OneToOne은 기본이 즉시 로딩이므로 지연 로딩으로 변경
+
+## 영속성 전이 설정
+- Order -> Delivery를 영속성 전이 ALL로 설정
+- Order -> OrderItem을 영속성 전이 ALL로 설정
+
+> 뭔가 예제를 하면서 복습한다는 느낌이 조금씩 상기되는것이 많은 도움이 되었다.
+처음에 @OneToOne관계에서 왜 Delivery에는 Order부분에 영속성 전이 ALL로 안하지?
+그런 생각이 들었지만 연관관계 주인은 Order에 있다는걸 알고 이해가 되었다.
