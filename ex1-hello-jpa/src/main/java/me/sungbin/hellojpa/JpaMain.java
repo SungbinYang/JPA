@@ -26,20 +26,12 @@ public class JpaMain {
         transaction.begin();
 
         try {
-            Child child1 = new Child();
-            Child child2 = new Child();
+            Member member = new Member();
+            member.setName("hello");
+            member.setHomeAddress(new Address("경기도", "시흥시", "군자"));
+            member.setWorkPeriod(new Period());
 
-            Parent parent = new Parent();
-            parent.addChild(child1);
-            parent.addChild(child2);
-
-            entityManager.persist(parent);
-
-            entityManager.flush();
-            entityManager.clear();
-
-            Parent findParent = entityManager.find(Parent.class, parent.getId());
-            entityManager.remove(findParent);
+            entityManager.persist(member);
 
             transaction.commit(); // 이때 DB에 쿼리를 날린다.
         } catch (Exception e) {
