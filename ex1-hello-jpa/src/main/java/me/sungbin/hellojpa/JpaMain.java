@@ -26,12 +26,15 @@ public class JpaMain {
         transaction.begin();
 
         try {
-            Member member = new Member();
-            member.setName("hello");
-            member.setHomeAddress(new Address("경기도", "시흥시", "군자"));
-            member.setWorkPeriod(new Period());
+            Address address = new Address("경기도", "시흥시", "군자");
 
+            Member member = new Member();
+            member.setName("member1");
+            member.setHomeAddress(address);
             entityManager.persist(member);
+
+            Address newAddress = new Address("서울", address.getStreet(), address.getZipcode());
+            member.setHomeAddress(newAddress);
 
             transaction.commit(); // 이때 DB에 쿼리를 날린다.
         } catch (Exception e) {

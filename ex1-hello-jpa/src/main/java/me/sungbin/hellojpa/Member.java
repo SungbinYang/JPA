@@ -1,7 +1,6 @@
 package me.sungbin.hellojpa;
 
 import javax.persistence.*;
-import java.time.LocalDateTime;
 
 /**
  * packageName : me.sungbin.hellojpa
@@ -30,14 +29,6 @@ public class Member {
 
     @Embedded
     private Address homeAddress;
-
-    @Embedded
-    @AttributeOverrides({
-            @AttributeOverride(name = "city", column = @Column(name = "COMPANY_CITY")),
-            @AttributeOverride(name = "street", column = @Column(name = "COMPANY_STREET")),
-            @AttributeOverride(name = "zipcode", column = @Column(name = "COMPANY_ZIPCODE")),
-    })
-    private Address companyAddress;
 
     public Long getId() {
         return id;
@@ -71,11 +62,4 @@ public class Member {
         this.homeAddress = homeAddress;
     }
 
-    public Address getCompanyAddress() {
-        return companyAddress;
-    }
-
-    public void setCompanyAddress(Address companyAddress) {
-        this.companyAddress = companyAddress;
-    }
 }
