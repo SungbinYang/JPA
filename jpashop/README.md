@@ -111,3 +111,5 @@
 > 뭔가 예제를 하면서 복습한다는 느낌이 조금씩 상기되는것이 많은 도움이 되었다.
 처음에 @OneToOne관계에서 왜 Delivery에는 Order부분에 영속성 전이 ALL로 안하지?
 그런 생각이 들었지만 연관관계 주인은 Order에 있다는걸 알고 이해가 되었다.
+
+![](https://velog.velcdn.com/images/roberts/post/5febb4fa-3b71-4eb5-89a9-d7a28a6757c6/image.png)
