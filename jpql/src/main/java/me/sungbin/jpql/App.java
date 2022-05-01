@@ -24,21 +24,25 @@ public class App {
         transaction.begin();
 
         try {
-            Member member = new Member();
-            member.setUsername("member1");
-            member.setAge(10);
-            entityManager.persist(member);
+            for (int i = 0; i < 100 ; i++) {
+                Member member = new Member();
+                member.setUsername("member" + i);
+                member.setAge(i);
+                entityManager.persist(member);
+            }
 
             entityManager.flush();
             entityManager.clear();
 
-            List<MemberDTO> resultList = entityManager.createQuery("select new me.sungbin.jpql.MemberDTO(m.username, m.age) from Member m", MemberDTO.class)
+            List<Member> resultList = entityManager.createQuery("select m from Member m order by m.age desc", Member.class)
+                    .setFirstResult(1)
+                    .setMaxResults(10)
                     .getResultList();
 
-            MemberDTO memberDTO = resultList.get(0);
-
-            System.out.println("memberDTO.getUsername() = " + memberDTO.getUsername());
-            System.out.println("memberDTO.getAge() = " + memberDTO.getAge());
+            System.out.println("resultList.size() = " + resultList.size());
+            for (Member member1 : resultList) {
+                System.out.println("member1 = " + member1);
+            }
 
             transaction.commit(); // 이때 DB에 쿼리를 날린다.
         } catch (Exception e) {
