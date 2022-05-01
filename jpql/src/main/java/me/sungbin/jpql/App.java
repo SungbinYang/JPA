@@ -1,6 +1,7 @@
 package me.sungbin.jpql;
 
 import javax.persistence.*;
+import java.util.List;
 
 /**
  * packageName : me.sungbin.jpql
@@ -28,11 +29,16 @@ public class App {
             member.setAge(10);
             entityManager.persist(member);
 
-            Member singleResult = entityManager.createQuery("select m from Member m where m.username = :username", Member.class)
-                    .setParameter("username", "member1")
-                    .getSingleResult();
+            entityManager.flush();
+            entityManager.clear();
 
-            System.out.println("singleResult = " + singleResult.getUsername());
+            List<MemberDTO> resultList = entityManager.createQuery("select new me.sungbin.jpql.MemberDTO(m.username, m.age) from Member m", MemberDTO.class)
+                    .getResultList();
+
+            MemberDTO memberDTO = resultList.get(0);
+
+            System.out.println("memberDTO.getUsername() = " + memberDTO.getUsername());
+            System.out.println("memberDTO.getAge() = " + memberDTO.getAge());
 
             transaction.commit(); // 이때 DB에 쿼리를 날린다.
         } catch (Exception e) {

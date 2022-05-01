@@ -78,3 +78,22 @@ query.setParameter(1, usernameParam);
 
 > 실제 실무에서는 위치 기준 파라미터는 쓰지 않는다. 왜냐하면 중간에 번호를 끼어넣으면
 순서가 밀리고 너무 비효율적이기 때문이다.
+
+## 프로젝션
+- SELECT 절에 조회할 대상을 지정하는 것
+- 프로젝션 대상: 엔티티, 임베디드 타입, 스칼라 타입(숫자, 문자등 기본 데이터 타입)
+- SELECT m FROM Member m -> 엔티티 프로젝션
+- SELECT m.team FROM Member m -> 엔티티 프로젝션
+- SELECT m.address FROM Member m -> 임베디드 타입 프로젝션
+- SELECT m.username, m.age FROM Member m -> 스칼라 타입 프로젝션
+- DISTINCT로 중복 제거
+
+## 프로젝션 - 여러 값 조회
+- SELECT m.username, m.age FROM Member m
+- Query 타입으로 조회
+- Object[] 타입으로 조회
+- new 명령어로 조회
+  * 단순 값을 DTO로 바로 조회
+    * SELECT new jpabook.jpql.UserDTO(m.username, m.age) FROM Member m
+  * 패키지 명을 포함한 전체클래스 명 입력
+  * 순서와 타입이 일치하는 생성자 필요
