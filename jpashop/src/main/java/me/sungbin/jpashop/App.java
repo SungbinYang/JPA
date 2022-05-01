@@ -1,6 +1,7 @@
 package me.sungbin.jpashop;
 
 import me.sungbin.jpashop.domain.Book;
+import me.sungbin.jpashop.domain.Item;
 import me.sungbin.jpashop.domain.Order;
 import me.sungbin.jpashop.domain.OrderItem;
 
@@ -35,6 +36,9 @@ public class App {
             book.setAuthor("sungbin");
 
             entityManager.persist(book);
+
+            entityManager.createQuery("select i from Item i where type(i) = Book", Item.class)
+                    .getResultList();
 
             transaction.commit();
         } catch (Exception e) {

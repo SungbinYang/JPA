@@ -29,8 +29,9 @@ public class App {
             entityManager.persist(team);
 
             Member member = new Member();
-            member.setUsername("teamA");
+            member.setUsername("member1");
             member.setAge(10);
+            member.setMemberType(MemberType.ADMIN);
             member.changeTeam(team);
 
             entityManager.persist(member);
@@ -38,11 +39,16 @@ public class App {
             entityManager.flush();
             entityManager.clear();
 
-            String qlString = "select m from Member m join Team t on m.username = t.name";
-            List<Member> resultList = entityManager.createQuery(qlString, Member.class)
+            String qlString = "select m.username, 'HELLO', TRUE from Member m where m.memberType = :userType";
+            List<Object[]> resultList = entityManager.createQuery(qlString, Object[].class)
+                    .setParameter("userType", MemberType.ADMIN)
                     .getResultList();
 
-            System.out.println("resultList.size() = " + resultList.size());
+            for (Object[] objects : resultList) {
+                System.out.println("objects = " + objects[0]);
+                System.out.println("objects = " + objects[1]);
+                System.out.println("objects = " + objects[2]);
+            }
 
             transaction.commit(); // 이때 DB에 쿼리를 날린다.
         } catch (Exception e) {

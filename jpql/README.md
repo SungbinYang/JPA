@@ -232,3 +232,17 @@ where m.team = ANY (select t from Team t)
 - FROM 절의 서브 쿼리는 현재 JPQL에서 불가능
   * 조인으로 풀 수 있으면 풀어서 해결
   * 조인으로도 못 풀면 쿼리를 2번 날리거나 애플리케이션 단에서 조작
+
+## JPQL 타입 표현
+- 문자: ‘HELLO’, ‘She’’s’
+- 숫자: 10L(Long), 10D(Double), 10F(Float)
+- Boolean: TRUE, FALSE
+- ENUM: jpabook.MemberType.Admin (패키지명 포함)
+- 엔티티 타입: TYPE(m) = Member (상속 관계에서 사용)
+
+## JPQL 기타
+- SQL과 문법이 같은 식
+- EXISTS, IN
+- AND, OR, NOT
+- =, >, >=, <, <=, <>
+- BETWEEN, LIKE, IS NULL
