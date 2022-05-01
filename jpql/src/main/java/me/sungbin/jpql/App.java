@@ -39,7 +39,7 @@ public class App {
             entityManager.flush();
             entityManager.clear();
 
-            String query = "select nullif(m.username, '관리자') from Member m";
+            String query = "select function('group_concat', m.username) from Member m";
 
             List<String> resultList = entityManager.createQuery(query, String.class).getResultList();
 

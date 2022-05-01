@@ -285,3 +285,20 @@ select coalesce(m.username,'이름 없는 회원') from Member m
 ``` sql
 select NULLIF(m.username, '관리자') from Member m
 ```
+## JPQL 기본 함수
+- CONCAT
+- SUBSTRING
+- TRIM
+- LOWER, UPPER
+- LENGTH
+- LOCATE
+- ABS, SORT, MOD
+- SIZE, INDEX(JPA 용도)
+
+## 사용자 정의 함수 호출
+- 하이버네이트는 사용전 방언에 추가해야 한다.
+  * 사용하는 DB 방언을 상속받고, 사용자 정의 함수를 등록한다.
+
+``` sql
+select function('group_concat', i.name) from Item i
+```
