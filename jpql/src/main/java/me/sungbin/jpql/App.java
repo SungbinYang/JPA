@@ -29,7 +29,7 @@ public class App {
             entityManager.persist(team);
 
             Member member = new Member();
-            member.setUsername("member1");
+            member.setUsername("관리자");
             member.setAge(10);
             member.setMemberType(MemberType.ADMIN);
             member.changeTeam(team);
@@ -39,15 +39,12 @@ public class App {
             entityManager.flush();
             entityManager.clear();
 
-            String qlString = "select m.username, 'HELLO', TRUE from Member m where m.memberType = :userType";
-            List<Object[]> resultList = entityManager.createQuery(qlString, Object[].class)
-                    .setParameter("userType", MemberType.ADMIN)
-                    .getResultList();
+            String query = "select nullif(m.username, '관리자') from Member m";
 
-            for (Object[] objects : resultList) {
-                System.out.println("objects = " + objects[0]);
-                System.out.println("objects = " + objects[1]);
-                System.out.println("objects = " + objects[2]);
+            List<String> resultList = entityManager.createQuery(query, String.class).getResultList();
+
+            for (String s : resultList) {
+                System.out.println("s = " + s);
             }
 
             transaction.commit(); // 이때 DB에 쿼리를 날린다.
