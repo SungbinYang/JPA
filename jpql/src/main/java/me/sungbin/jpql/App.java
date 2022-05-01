@@ -24,25 +24,25 @@ public class App {
         transaction.begin();
 
         try {
-            for (int i = 0; i < 100 ; i++) {
-                Member member = new Member();
-                member.setUsername("member" + i);
-                member.setAge(i);
-                entityManager.persist(member);
-            }
+            Team team = new Team();
+            team.setName("teamA");
+            entityManager.persist(team);
+
+            Member member = new Member();
+            member.setUsername("teamA");
+            member.setAge(10);
+            member.changeTeam(team);
+
+            entityManager.persist(member);
 
             entityManager.flush();
             entityManager.clear();
 
-            List<Member> resultList = entityManager.createQuery("select m from Member m order by m.age desc", Member.class)
-                    .setFirstResult(1)
-                    .setMaxResults(10)
+            String qlString = "select m from Member m join Team t on m.username = t.name";
+            List<Member> resultList = entityManager.createQuery(qlString, Member.class)
                     .getResultList();
 
             System.out.println("resultList.size() = " + resultList.size());
-            for (Member member1 : resultList) {
-                System.out.println("member1 = " + member1);
-            }
 
             transaction.commit(); // 이때 DB에 쿼리를 날린다.
         } catch (Exception e) {
