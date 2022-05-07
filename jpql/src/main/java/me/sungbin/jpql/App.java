@@ -1,6 +1,9 @@
 package me.sungbin.jpql;
 
-import javax.persistence.*;
+import javax.persistence.EntityManager;
+import javax.persistence.EntityManagerFactory;
+import javax.persistence.EntityTransaction;
+import javax.persistence.Persistence;
 import java.util.List;
 
 /**
@@ -24,26 +27,21 @@ public class App {
         transaction.begin();
 
         try {
-            Team team = new Team();
-            team.setName("teamA");
-            entityManager.persist(team);
+            Member member1 = new Member();
+            member1.setUsername("관리자1");
+            entityManager.persist(member1);
 
-            Member member = new Member();
-            member.setUsername("관리자");
-            member.setAge(10);
-            member.setMemberType(MemberType.ADMIN);
-            member.changeTeam(team);
-
-            entityManager.persist(member);
+            Member member2 = new Member();
+            member2.setUsername("관리자2");
+            entityManager.persist(member2);
 
             entityManager.flush();
             entityManager.clear();
 
-            String query = "select function('group_concat', m.username) from Member m";
+            String qlString = "select m.team from Member m";
+            List<Team> resultList = entityManager.createQuery(qlString, Team.class).getResultList();
 
-            List<String> resultList = entityManager.createQuery(query, String.class).getResultList();
-
-            for (String s : resultList) {
+            for (Team s : resultList) {
                 System.out.println("s = " + s);
             }
 
