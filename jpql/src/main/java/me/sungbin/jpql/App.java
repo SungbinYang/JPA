@@ -4,6 +4,7 @@ import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
 import javax.persistence.EntityTransaction;
 import javax.persistence.Persistence;
+import java.util.Collection;
 import java.util.List;
 
 /**
@@ -27,22 +28,27 @@ public class App {
         transaction.begin();
 
         try {
+            Team team = new Team();
+            entityManager.persist(team);
+
             Member member1 = new Member();
             member1.setUsername("관리자1");
+            member1.setTeam(team);
             entityManager.persist(member1);
 
             Member member2 = new Member();
             member2.setUsername("관리자2");
+            member2.setTeam(team);
             entityManager.persist(member2);
 
             entityManager.flush();
             entityManager.clear();
 
-            String qlString = "select m.team from Member m";
-            List<Team> resultList = entityManager.createQuery(qlString, Team.class).getResultList();
+            String qlString = "select m.username from Team t join t.members m";
+            List<Collection> resultList = entityManager.createQuery(qlString, Collection.class).getResultList();
 
-            for (Team s : resultList) {
-                System.out.println("s = " + s);
+            for (Object o : resultList) {
+                System.out.println("o = " + o);
             }
 
             transaction.commit(); // 이때 DB에 쿼리를 날린다.

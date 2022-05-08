@@ -18,5 +18,3 @@ Y
 )src/main/java/me/sungbin/jpql/Member.java,a/8/a87fa1c47f52d83d1735355e00416a7df87cbf4f
 ]
 -src/main/java/me/sungbin/jpql/MemberType.java,6/2/620cc29428d91ce1030451a0b775c4b80d50ede1
-9
-	README.md,8/e/8ec9a00bfd09b3190ac6b22251dbb1aa95a0579d
